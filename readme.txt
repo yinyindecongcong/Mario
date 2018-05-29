@@ -1,1 +1,1 @@
-this is a mario project using python.
+this is a python project of Super Mario, learning from @justinmeister/Mario-Level-1.
