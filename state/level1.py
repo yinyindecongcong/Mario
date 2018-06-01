@@ -1,6 +1,6 @@
 import pygame as pg
 import config as c, resource, Controller
-from component import  mario, info, collider, stone, flag_pole, checkpoint, score
+from component import  mario, info, collider, stone, flag_pole, checkpoint, score, enemies
 
 class Level1(Controller.State):
     def __init__(self):
@@ -28,6 +28,7 @@ class Level1(Controller.State):
         self.setup_coin_boxs()
         self.setup_flag_pole()
         self.setup_checkpoints()
+        self.setup_enemies()
         self.setup_mario()
         self.setup_sprite_groups()
 
@@ -153,6 +154,44 @@ class Level1(Controller.State):
         self.flag_pole_group.add(flag_pole.Pole(8505, 97))
         self.flag_pole_group.add(flag_pole.Pole_ball(8505, 97)) #flag_top
 
+    def setup_enemies(self):
+        """Creates all the enemies and stores them in a list of lists."""
+        goomba0 = enemies.Goomba()
+        goomba1 = enemies.Goomba()
+        goomba2 = enemies.Goomba()
+        goomba3 = enemies.Goomba()
+        goomba4 = enemies.Goomba(bottom=193)
+        goomba5 = enemies.Goomba(bottom=193)
+        goomba6 = enemies.Goomba()
+        goomba7 = enemies.Goomba()
+        goomba8 = enemies.Goomba()
+        goomba9 = enemies.Goomba()
+        goomba10 = enemies.Goomba()
+        goomba11 = enemies.Goomba()
+        goomba12 = enemies.Goomba()
+        goomba13 = enemies.Goomba()
+        goomba14 = enemies.Goomba()
+        goomba15 = enemies.Goomba()
+
+        koopa0 = enemies.Koopa()
+
+        enemy_group1 = pg.sprite.Group(goomba0)
+        enemy_group2 = pg.sprite.Group(goomba1)
+        enemy_group3 = pg.sprite.Group(goomba2, goomba3)
+        enemy_group4 = pg.sprite.Group(goomba4, goomba5)
+        enemy_group5 = pg.sprite.Group(goomba6, goomba7)
+        enemy_group6 = pg.sprite.Group(koopa0)
+        enemy_group7 = pg.sprite.Group(goomba8, goomba9)
+        enemy_group8 = pg.sprite.Group(goomba10, goomba11)
+        enemy_group9 = pg.sprite.Group(goomba12, goomba13)
+        enemy_group10 = pg.sprite.Group(goomba14, goomba15)
+
+        self.enemy_group = pg.sprite.Group()
+        self.enemy_group_list = [enemy_group1,enemy_group2,enemy_group3,enemy_group4,
+                                 enemy_group5,enemy_group6,enemy_group7,enemy_group8,
+                                 enemy_group9,enemy_group10]
+        #when reach checkpoint, add correspondent enemy subgroup to enemy_group
+
     def setup_checkpoints(self):
         '''invisible check point to check if elements like enemies should appear'''
         self.check_point_group = pg.sprite.Group()
@@ -179,6 +218,7 @@ class Level1(Controller.State):
     def setup_sprite_groups(self):
         self.ground_pipe_step_group = pg.sprite.Group(self.ground_group, self.pipe_group, self.step_group)
         self.die_later_group = pg.sprite.Group()
+        self.shell_group = pg.sprite.Group()
 
     def update(self, screen, keys, current_time):
         self.current_time = current_time
@@ -203,19 +243,12 @@ class Level1(Controller.State):
         if self.info.time <= 0 and not self.mario.dead:
             self.state = c.FROZEN
             self.game_info[c.LEVEL_STATE] = c.FROZEN
-            self.mario.state = c.DEATH_JUMP
-            self.mario.in_transition_state = True
-            self.mario.y_v = -10
-            self.mario.y_ac = 0.5
             self.game_info[c.MARIO_DEAD] = True
-            self.mario.dead = 1
+            self.mario.start_death_jump()
 
     def update_all_sprites(self, keys):
         self.mario.update(keys, self.game_info, self.powerup_group)
         self.powerup_group.update(self.game_info)
-        self.adjust_sprites_position()
-        self.update_viewport()
-        self.info.update(self.game_info, self.mario)
         self.brick_group.update(self.game_info)
         self.broken_brick_group.update()
         self.coin_box_group.update(self.game_info)
@@ -223,31 +256,42 @@ class Level1(Controller.State):
         self.flag_pole_group.update()
         self.check_point_check()
         self.score_group.update()
+        self.enemy_group.update(self.game_info)
         self.die_later_group.update(self.game_info)
+        self.adjust_sprites_position()
+        self.update_viewport()
+        self.info.update(self.game_info, self.mario)
 
     def adjust_sprites_position(self):
-        self.adjust_mario_position()
+        self.adjust_enemies_position()
         self.adjust_powerup_position()
+        self.adjust_mario_position()
 
     def check_point_check(self):
         '''check if is mario reaching any checkpoint'''
         reach_point = pg.sprite.spritecollideany(self.mario, self.check_point_group)
         if reach_point:
-            #TODO:if checkpoint is 1 to 10, lala
-            if reach_point.name == '11':
+            #if is the first ten checkpoint, add correspondent enemies
+            if reach_point.name != 'secret_mushroom' and \
+                    int(reach_point.name) in range(1, 11):
+                for index, enemy in enumerate(self.enemy_group_list[int(reach_point.name) - 1]):
+                    enemy.rect.x = self.viewport.right + index * 60
+                self.enemy_group.add(self.enemy_group_list[int(reach_point.name) - 1])
+            #flag point
+            elif reach_point.name == '11':
                 self.mario.state = c.FLAGPOLE
                 self.mario.rect.right = reach_point.rect.right
                 if self.mario.rect.bottom < self.flag.rect.y:
                     self.mario.rect.bottom = self.flag.rect.y
                 self.flag.state = c.MOVE
-
+            #end
             elif reach_point.name == '12':
                 self.state == c.IN_CASTLE
                 self.mario.state = c.STAND
                 self.mario.in_castle = True
                 self.mario.kill()
                 self.info.state = c.FAST_COUNT_DOWN
-
+            #1up
             elif reach_point.name == 'secret_mushroom' and self.mario.y_v < 0:
                 mushroom_box = stone.Coin_box(reach_point.rect.x, reach_point.rect.bottom - 40,
                                               c.LIFE_MUSHROOM, self.powerup_group)
@@ -264,8 +308,9 @@ class Level1(Controller.State):
         if not self.mario.in_transition_state:
             self.mario.rect.x += round(self.mario.x_v)
             self.check_mario_x_collision()
-            self.mario.rect.y += round(self.mario.y_v)
-            self.check_mario_y_collision()
+            if not self.mario.in_transition_state:
+                self.mario.rect.y += round(self.mario.y_v)
+                self.check_mario_y_collision()
         if self.mario.rect.x < self.viewport.x:
             self.mario.rect.x = self.viewport.x
 
@@ -274,42 +319,15 @@ class Level1(Controller.State):
         collider = pg.sprite.spritecollideany(self.mario, self.ground_pipe_step_group)
         brick = pg.sprite.spritecollideany(self.mario, self.brick_group)
         coin_box = pg.sprite.spritecollideany(self.mario, self.coin_box_group)
-        powerup = pg.sprite.spritecollideany(self.mario, self.powerup_group)
+        enemy = pg.sprite.spritecollideany(self.mario, self.enemy_group)
         if collider:
             self.adjust_mario_x_collision(collider)
         elif brick:
             self.adjust_mario_x_collision(brick)
         elif coin_box:
             self.adjust_mario_x_collision(coin_box)
-        elif powerup:
-            if powerup.name == c.LIFE_MUSHROOM:
-                self.score_group.add(score.Score(self.mario.rect.x + 20, self.mario.rect.y, c.ONEUP))
-                self.game_info[c.LIVES] += 1
-                powerup.kill()
-            elif not powerup.name == c.FIREBALL:
-                powerup.kill()
-                self.game_info[c.SCORE] += 1000
-                self.score_group.add(score.Score(self.mario.rect.x + 20, self.mario.rect.y, 1000))
-            if powerup.name == c.STAR:
-                self.mario.invincible = True
-                self.mario.invincible_start_timer = self.current_time
-            elif powerup.name == c.MUSHROOM:
-                self.mario.state = c.SMALL_TO_BIG
-                self.mario.in_transition_state = True
-                self.convert_mushroom_to_fireflower()
-            elif powerup.name == c.FIREFLOWER:
-                if self.mario.big and not self.mario.fire:
-                    self.mario.state = c.BIG_TO_FIRE
-                    self.mario.in_transition_state = True
-                elif not self.mario.big:
-                    self.mario.state = c.SMALL_TO_BIG
-                    self.convert_mushroom_to_fireflower()
-                    self.mario.in_transition_state = True
-
-    def convert_mushroom_to_fireflower(self):
-        for coin_box in self.coin_box_group:
-            if coin_box.content == c.MUSHROOM:
-                coin_box.content = c.FIREFLOWER
+        elif enemy:
+            self.adjust_mario_enemy_x_collision(enemy)
 
     def adjust_mario_x_collision(self, collider):
         '''if collide with collider(pile, step, box...), adjust x axis'''
@@ -319,17 +337,59 @@ class Level1(Controller.State):
             self.mario.rect.left = collider.rect.right
         self.mario.x_v = 0
 
+    def adjust_mario_enemy_x_collision(self, enemy):
+        print('xxx')
+        #invincible
+        if self.mario.invincible:
+            self.game_info[c.SCORE] += 100
+            self.score_group.add(score.Score(self.mario.rect.x, self.mario.rect.y, 100))
+            enemy.kill()
+            enemy.start_death_jump()
+            self.die_later_group.add(enemy)
+        elif self.mario.hurt_invincible:
+            pass
+        #hurt mario
+        elif enemy.state == c.WALK or enemy.state == c.FALL or enemy.state == c.SLIDE:
+            if self.mario.big:
+                self.mario.fire = False
+                self.mario.state = c.BIG_TO_SMALL
+                self.mario.in_transition_state = True
+                self.convert_fireflower_to_mushroom()
+                print('tt', self.mario.state)
+            else:
+                self.state = c.FROZEN
+                self.game_info[c.LEVEL_STATE] = c.FROZEN
+                self.game_info[c.MARIO_DEAD] = True
+                self.mario.start_death_jump()
+                print(self.mario.state)
+        #just a still shell
+        elif enemy.state == c.JUMPED_ON:
+            if self.mario.rect.x < enemy.rect.x: #left -> right
+                enemy.rect.x = self.mario.rect.right
+                enemy.facing_right = True
+            else:  #right -> left
+                enemy.rect.right = self.mario.rect.left
+                enemy.facing_right = False
+            self.game_info[c.SCORE] += 400
+            self.score_group.add(score.Score(self.mario.rect.x, self.mario.rect.y, 400))
+            enemy.state = c.SLIDE
+
     def check_mario_y_collision(self):
-        #TODO
         collider = pg.sprite.spritecollideany(self.mario, self.ground_pipe_step_group)
         brick = pg.sprite.spritecollideany(self.mario, self.brick_group)
         coin_box = pg.sprite.spritecollideany(self.mario, self.coin_box_group)
+        powerup = pg.sprite.spritecollideany(self.mario, self.powerup_group)
+        enemy = pg.sprite.spritecollideany(self.mario, self.enemy_group)
         if collider:
             self.adjust_mario_y_ground_collision(collider)
         elif brick:
             self.adjust_mario_y_brick_collision(brick)
         elif coin_box:
             self.adjust_mario_y_coin_box_collision(coin_box)
+        elif powerup:
+            self.adjust_mario_powerup_collision(powerup)
+        elif enemy:
+            self.adjust_mario_enemy_y_collision(enemy)
         self.check_falling()
 
     def adjust_mario_y_ground_collision(self, collider):
@@ -388,6 +448,91 @@ class Level1(Controller.State):
             self.mario.y_v = 0
             self.mario.state = c.WALK
 
+    def adjust_mario_powerup_collision(self, powerup):
+        if powerup.name == c.LIFE_MUSHROOM:
+            self.score_group.add(score.Score(self.mario.rect.x + 20, self.mario.rect.y, c.ONEUP))
+            self.game_info[c.LIVES] += 1
+            powerup.kill()
+        elif not powerup.name == c.FIREBALL:
+            powerup.kill()
+            self.game_info[c.SCORE] += 1000
+            self.score_group.add(score.Score(self.mario.rect.x + 20, self.mario.rect.y, 1000))
+        if powerup.name == c.STAR:
+            self.mario.invincible = True
+            self.mario.invincible_start_timer = self.current_time
+        elif powerup.name == c.MUSHROOM:
+            self.mario.state = c.SMALL_TO_BIG
+            self.mario.in_transition_state = True
+            self.convert_mushroom_to_fireflower()
+        elif powerup.name == c.FIREFLOWER:
+            if self.mario.big and not self.mario.fire:
+                self.mario.state = c.BIG_TO_FIRE
+                self.mario.in_transition_state = True
+            elif not self.mario.big:
+                self.mario.state = c.SMALL_TO_BIG
+                self.convert_mushroom_to_fireflower()
+                self.mario.in_transition_state = True
+
+    def convert_mushroom_to_fireflower(self):
+        for coin_box in self.coin_box_group:
+            if coin_box.content == c.MUSHROOM:
+                coin_box.content = c.FIREFLOWER
+
+    def convert_fireflower_to_mushroom(self):
+        for coin_box in self.coin_box_group:
+            if coin_box.content == c.FIREFLOWER:
+                coin_box.content = c.MUSHROOM
+
+    def adjust_mario_enemy_y_collision(self, enemy):
+        print('yyy')
+        if self.state == c.FROZEN:
+            return
+        if self.mario.invincible:
+            self.game_info[c.SCORE] += 100
+            self.score_group.add(score.Score(self.mario.rect.x, self.mario.rect.y, 100))
+            enemy.kill()
+            enemy.start_death_jump()
+            self.die_later_group.add(enemy)
+        elif self.mario.rect.top < enemy.rect.top:  #high to low
+            if enemy.name == 'Goomba':
+                self.game_info[c.SCORE] += 100
+                self.score_group.add(score.Score(self.mario.rect.x, self.mario.rect.y, 100))
+                enemy.kill()
+                enemy.state = c.JUMPED_ON
+                self.die_later_group.add(enemy)
+            #stop sliding shell or make it a shell
+            elif enemy.state == c.SLIDE or enemy.state == c.WALK:
+                enemy.state = c.JUMPED_ON
+                enemy.x_v, enemy.y_v = 0, 0
+            # mario jump on shell
+            elif enemy.state == c.JUMPED_ON:
+                if self.mario.rect.centerx < enemy.rect.centerx:
+                    enemy.facing_right = True
+                    enemy.rect.left = self.mario.rect.right
+                else:
+                    enemy.facing_right = False
+                    enemy.rect.right = self.mario.rect.left
+                enemy.state = c.SLIDE
+                self.game_info[c.SCORE] += 200
+                self.score_group.add(score.Score(self.mario.rect.x, self.mario.rect.y, 200))
+
+            self.mario.bottom = enemy.rect.top
+            self.mario.y_v = -10
+            self.mario.state = c.JUMP
+        else: #low to high, hurts
+            if self.mario.hurt_invincible:
+                return
+            elif self.mario.big:
+                self.mario.fire = False
+                self.mario.in_transition_state = True
+                self.mario.state = c.BIG_TO_SMALL
+                self.convert_fireflower_to_mushroom()
+            else:
+                self.state = c.FROZEN
+                self.game_info[c.LEVEL_STATE] = c.FROZEN
+                self.game_info[c.MARIO_DEAD] = True
+                self.mario.start_death_jump()
+
     def check_falling(self):
         '''check if mario is at the place that is higher than ground, pipe, brick, etc'''
         self.mario.rect.y += 1
@@ -415,41 +560,25 @@ class Level1(Controller.State):
             self.if_off_screen(mushroom)
 
     def check_mushroom_x_collision(self, mushroom):
-        collider = pg.sprite.spritecollideany(mushroom, self.ground_pipe_step_group)
-        brick = pg.sprite.spritecollideany(mushroom, self.brick_group)
-        coin_box = pg.sprite.spritecollideany(mushroom, self.coin_box_group)
+        test_group = pg.sprite.Group(self.ground_pipe_step_group, self.brick_group, self.coin_box_group)
+        collider = pg.sprite.spritecollideany(mushroom, test_group)
         if collider:
-            self.adjust_mushroom_x_collision(collider, mushroom)
-        elif brick:
-            self.adjust_mushroom_x_collision(brick, mushroom)
-        elif coin_box:
-            self.adjust_mushroom_x_collision(coin_box, mushroom)
+            #if collide with collider(pile, step, box...), adjust x axis
+            if mushroom.rect.x < collider.rect.x:
+                mushroom.rect.right = collider.rect.left
+                mushroom.facing_right = False
+            else:
+                mushroom.rect.left = collider.rect.right
+                mushroom.Facing_right = True
 
     def check_mushroom_y_collision(self, mushroom):
-        collider = pg.sprite.spritecollideany(mushroom, self.ground_pipe_step_group)
-        brick = pg.sprite.spritecollideany(mushroom, self.brick_group)
-        coin_box = pg.sprite.spritecollideany(mushroom, self.coin_box_group)
+        test_group = pg.sprite.Group(self.ground_pipe_step_group, self.brick_group, self.coin_box_group)
+        collider = pg.sprite.spritecollideany(mushroom, test_group)
         if collider:
-            self.adjust_mushroom_y_collision(collider, mushroom)
-        elif brick:
-            self.adjust_mushroom_y_collision(brick, mushroom)
-        elif coin_box:
-            self.adjust_mushroom_y_collision(coin_box, mushroom)
+            mushroom.rect.bottom = collider.rect.top
+            mushroom.state = c.SLIDE
+            mushroom.y_v = 0
         self.check_powerup_falling(mushroom)
-
-    def adjust_mushroom_x_collision(self, collider, mushroom):
-        '''if collide with collider(pile, step, box...), adjust x axis'''
-        if mushroom.rect.x < collider.rect.x:
-            mushroom.rect.right = collider.rect.left
-            mushroom.facing_right = False
-        else:
-            mushroom.rect.left = collider.rect.right
-            mushroom.Facing_right = True
-
-    def adjust_mushroom_y_collision(self, collider, mushroom):
-        mushroom.rect.bottom = collider.rect.top
-        mushroom.state = c.SLIDE
-        mushroom.y_v = 0
 
     def check_powerup_falling(self, powerup):
         powerup.rect.y += 1
@@ -459,7 +588,7 @@ class Level1(Controller.State):
         powerup.rect.y -= 1
 
     def if_off_screen(self, item):
-        if item.rect.x > self.viewport.right or item.rect.x < self.viewport.left \
+        if item.rect.x > self.viewport.right + 100 or item.rect.x < self.viewport.left - 100 \
                 or item.rect.y > self.viewport.bottom:
             item.kill()
 
@@ -518,6 +647,64 @@ class Level1(Controller.State):
             fireball.rect.bottom = collider.rect.top
             fireball.bounce()
 
+    def adjust_enemies_position(self):
+        for enemy in self.enemy_group:
+            enemy.rect.x += enemy.x_v
+            self.check_enemy_x_collision(enemy)
+            if not enemy.state == c.DEATH_JUMP:
+                enemy.rect.y += enemy.y_v
+                self.check_enemy_y_collision(enemy)
+            self.if_off_screen(enemy)
+
+    def check_enemy_x_collision(self, enemy):
+        '''check if collide with colliders or partner'''
+        enemy.kill() #kill first
+        test_group = pg.sprite.Group(self.ground_pipe_step_group, self.brick_group, self.coin_box_group)
+        collider = pg.sprite.spritecollideany(enemy, test_group)
+        enemy_collider = pg.sprite.spritecollideany(enemy, self.enemy_group)
+        if collider:
+            if enemy.facing_right:
+                enemy.rect.right = collider.rect.left
+                enemy.facing_right = False
+            else:
+                enemy.rect.left = collider.rect.right
+                enemy.facing_right = True
+            enemy.x_v = 2 if enemy.facing_right else -2
+        elif enemy_collider:
+            if enemy.name == 'Goomba' and enemy_collider.name == 'Koopa':
+                self.die_later_group.add(enemy)
+                enemy.start_death_jump()
+                self.game_info[c.SCORE] += 100
+                self.score_group.add(score.Score(enemy.rect.x, enemy.rect.y, 100))
+                return
+            elif enemy.name == 'Koopa' and enemy_collider.name == 'Goomba':
+                enemy_collider.kill()
+                self.die_later_group.add(enemy_collider)
+                enemy_collider.start_death_jump()
+                print(enemy_collider.state)
+                self.game_info[c.SCORE] += 100
+                self.score_group.add(score.Score(enemy_collider.rect.x, enemy_collider.rect.y, 100))
+            elif enemy.facing_right:
+                enemy.facing_right = False
+                enemy_collider.facing_right = True
+                enemy.rect.right = enemy_collider.rect.left
+            else:
+                enemy.rect.left = enemy_collider.rect.right
+                enemy.facing_right = True
+                enemy_collider.facing_right = False
+            enemy.x_v = 2 if enemy.facing_right else -2
+            enemy_collider.x_v = 2 if enemy_collider.facing_right else -2
+        self.enemy_group.add(enemy)
+
+    def check_enemy_y_collision(self, enemy):
+        test_group = pg.sprite.Group(self.ground_pipe_step_group, self.brick_group, self.coin_box_group)
+        collider = pg.sprite.spritecollideany(enemy, test_group)
+        if collider:
+            enemy.rect.bottom = collider.rect.top
+            enemy.state = c.WALK
+            enemy.y_v = 0
+        self.check_powerup_falling(enemy)
+
     def update_viewport(self):
         one_third = self.viewport.x + self.viewport.width // 3
         mario_centerx = self.mario.rect.centerx
@@ -528,6 +715,7 @@ class Level1(Controller.State):
             self.viewport.x = min(temp, end)
 
     def blit_all(self, screen):
+        print(self.mario.state)
         self.level.blit(self.background, self.viewport, self.viewport) #draw background on level image
         self.powerup_group.draw(self.level)
         self.brick_group.draw(self.level)
@@ -537,6 +725,7 @@ class Level1(Controller.State):
         self.die_later_group.draw(self.level)
         self.flag_pole_group.draw(self.level)
         self.mario_group.draw(self.level)
+        self.enemy_group.draw(self.level)
         for score in self.score_group:
             score.draw(self.level)
         screen.blit(self.level, (0,0), self.viewport)

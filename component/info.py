@@ -20,7 +20,7 @@ class Info():
         self.state = state
         self.game_info = game_info
         self.current_time = 0
-        self.time = 10
+        self.time = 401
         self.image_sheet = resource.GFX['text_images']
         self.coin_total = game_info[c.COIN_TOTAL]
         self.score = game_info[c.SCORE]

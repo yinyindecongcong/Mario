@@ -116,3 +116,7 @@ BOUNCING = 'bouncing'
 EXPLODING = 'exploding'
 
 DEATH_JUMP = 'death jump'
+
+#enemies
+JUMPED_ON = 'jumped on'
+DEATH_JUMP = 'death jump'
