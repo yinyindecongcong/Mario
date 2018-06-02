@@ -6,10 +6,9 @@ class LoadScreen(Controller.State):
     def __init__(self):
         super().__init__()
 
-    def startup(self, current_time, persist):
+    def startup(self, current_time, game_info):
         self.start_time = current_time
-        self.persist = persist
-        self.game_info = persist
+        self.game_info = game_info
         self.next_state = self.set_next_state()
         info_state = self.set_info_state()
         self.info = info.Info(self.game_info, info_state)
@@ -32,4 +31,16 @@ class LoadScreen(Controller.State):
             screen.fill((106,150,252))
         else:
             self.done = True
+
+class GameOver(LoadScreen):
+    def __init__(self):
+        super().__init__()
+
+    def set_info_state(self):
+        return c.GAME_OVER
+
+    def set_next_state(self):
+        return c.MAIN_MENU
+
+
 

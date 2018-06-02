@@ -26,6 +26,7 @@ class Mario(pg.sprite.Sprite):
         self.death_timer = 0    #timer of DEATH state
         self.last_fireball_timer = 0 #fireball
         self.flag_pole_timer = 0 #
+        self.hurt_invincible_timer = 0
 
     def setup_states(self):
         '''setup states that affect the behavior of mario'''
@@ -90,7 +91,6 @@ class Mario(pg.sprite.Sprite):
                                   self.left_big_normal_frames, self.left_big_green_frames,
                                   self.left_big_red_frames, self.left_big_black_frames,
                                   self.left_fire_frames]
-
         #right_small_normal_frames
         self.right_small_normal_frames.append(self.get_image(178, 32, 12, 16))  # right standing [0]
         self.right_small_normal_frames.append(self.get_image(80, 32, 15, 16))   # Right walking 1 [1]
@@ -212,7 +212,7 @@ class Mario(pg.sprite.Sprite):
                             self.left_fire_frames]
         self.invincible_big_frames_list = [self.normal_big_frames, self.green_big_frames,
                                            self.red_big_frames, self.black_big_frames]
-
+        self.all_frames_group = self.right_frames_group + self.left_frames_group
         self.right_frames = self.normal_small_frames[0]
         self.left_frames = self.normal_small_frames[1]
 
@@ -243,8 +243,18 @@ class Mario(pg.sprite.Sprite):
             self.small_to_big()
         elif self.state == c.BIG_TO_FIRE:
             self.big_to_fire()
+        elif self.state == c.BIG_TO_SMALL:
+            self.big_to_small()
         elif self.state == c.DEATH_JUMP:
             self.death_jump()
+        elif self.state == c.FLAGPOLE:
+            self.slide_down_pole()
+        elif self.state == c.BOTTOM_OF_POLE:
+            self.sitting_on_bottom()
+        elif self.state == c.WALKING_TO_CASTLE:
+            self.walking_to_castle()
+        elif self.state ==c.END_OF_LEVEL_FALL:
+            self.end_fall()
 
     def standing(self, keys, fireball_group):
         '''check if Mario is still standing, actually fireball_group contains not only fireball'''
@@ -406,11 +416,18 @@ class Mario(pg.sprite.Sprite):
 
     def small_to_big(self):
         '''transform to big, switch frame based on time intervel'''
+        frames = [self.normal_small_frames[1 - self.facing_right][7],
+                  self.normal_small_frames[1 - self.facing_right][0],
+                  self.normal_big_frames[1 - self.facing_right][0]]
         if self.big_transition_timer == 0:
             self.big_transition_timer = self.current_time
         for i in range(9):
             if 70 * (i + 1) <= self.current_time - self.big_transition_timer < 70 * (i + 2):
-                self.switch_frame_s_m_b(i) #switch frame(small,middle,big) by i
+                #switch frame(small,middle,big) by i
+                self.image = frames[i % 3]
+                bottom, centerx = self.rect.bottom, self.rect.centerx
+                self.rect = self.image.get_rect()
+                self.rect.bottom, self.rect.centerx = bottom, centerx
                 if i == 8:
                     self.state = c.WALK
                     self.in_transition_state = False
@@ -425,17 +442,6 @@ class Mario(pg.sprite.Sprite):
         bottom, x = self.rect.bottom, self.rect.x
         self.rect = self.image.get_rect()
         self.rect.bottom, self.rect.x = bottom, x
-
-    def switch_frame_s_m_b(self, i):
-        if i % 3 == 0: #middle
-            self.image = self.normal_small_frames[0][7] if self.facing_right else self.normal_small_frames[1][7]
-        elif i % 3 == 1: #small
-            self.image = self.normal_small_frames[0][0] if self.facing_right else self.normal_small_frames[1][0]
-        else:
-            self.image = self.normal_big_frames[0][0] if self.facing_right else self.normal_big_frames[1][0]
-        bottom, centerx = self.rect.bottom, self.rect.centerx
-        self.rect = self.image.get_rect()
-        self.rect.bottom, self.rect.centerx = bottom, centerx
 
     def big_to_fire(self):
         '''transform from big to fire, switch frame based on time intervel'''
@@ -453,13 +459,51 @@ class Mario(pg.sprite.Sprite):
                     self.fire_transition_timer = 0
                     self.right_frames, self.left_frames = self.fire_frames
 
-    def death_jump(self):
+    def big_to_small(self):
+        '''transform from big/fire to small, switch frame based on time intervel'''
+        frames = [self.normal_big_frames[1 - self.facing_right][4],
+                  self.normal_big_frames[1 - self.facing_right][8],
+                  self.normal_small_frames[1 - self.facing_right][8]]
+        if self.big_transition_timer == 0:
+            self.big_transition_timer = self.current_time
+        for i in range(9):
+            if 70 * (i + 1) <= self.current_time - self.big_transition_timer < 70 * (i + 2):
+                #switch frame(small,middle,big) by i
+                self.image = frames[i % 3]
+                bottom, centerx = self.rect.bottom, self.rect.centerx
+                self.rect = self.image.get_rect()
+                self.rect.bottom, self.rect.centerx = bottom, centerx
+                if i == 8:
+                    self.state = c.WALK
+                    self.in_transition_state = False
+                    self.big_transition_timer = 0
+                    self.become_small()
+
+    def become_small(self):
+        '''adjust variable related to small state'''
+        self.big = False
+        self.hurt_invincible_timer = self.current_time
+        self.right_frames, self.left_frames = self.normal_small_frames
+        self.image = self.right_frames[0] if self.facing_right else self.left_frames[0]
+        bottom, x = self.rect.bottom, self.rect.x
+        self.rect = self.image.get_rect()
+        self.rect.bottom, self.rect.x = bottom, x
+
+    def start_death_jump(self):
+        self.state = c.DEATH_JUMP
+        self.in_transition_state = True
+        self.y_v = -10
+        self.y_ac = 0.5
         self.frame_index = 6
         self.image = self.right_frames[self.frame_index]
+        self.death_timer = self.current_time
+
+    def death_jump(self):
+        print('yoyo')
+        #if self.current_time - self.death_timer > 500:
         self.rect.y += self.y_v
-        print(self.y_v)
         self.y_v += 0.5
-        print(self.rect.y, self.y_v)
+        print(self.y_v)
 
     def check_to_allow_jump(self, keys):
         if not keys[resource.keybinding['jump']]:
@@ -469,12 +513,52 @@ class Mario(pg.sprite.Sprite):
         if not keys[resource.keybinding['fireball']]:
             self.allow_fireball = True
 
+    def slide_down_pole(self):
+        self.x_v, self.y_v = 0, 5
+        if self.rect.bottom < 495:
+            if self.flag_pole_timer == 0:
+                self.flag_pole_timer = self.current_time
+            elif self.current_time - self.flag_pole_timer < 65:
+                self.image = self.right_frames[9]
+            elif self.current_time - self.flag_pole_timer < 130:
+                self.image = self.right_frames[10]
+            else:
+                self.flag_pole_timer = self.current_time
+            self.rect.y += self.y_v
+        else:
+            self.flag_pole_timer = self.current_time
+            self.rect.bottom = 495
+            self.state = c.BOTTOM_OF_POLE
+
+    def sitting_on_bottom(self):
+        if self.current_time - self.flag_pole_timer > 210:
+            self.image = self.left_frames[9]
+            self.x_v, self.y_v = 0, 0
+            self.flag_pole_timer = 0
+
+    def walking_to_castle(self):
+        self.x_v = 4
+        if self.frame_index == 0:
+            self.frame_index = 1
+            self.walking_timer = self.current_time
+        elif self.current_time - self.walking_timer > self.animation_interval():
+                if self.frame_index < 3:
+                    self.frame_index += 1
+                else:
+                    self.frame_index = 1
+                self.walking_timer = self.current_time
+
+    def end_fall(self):
+        self.frame_index = 4
+        self.y_v = 6
+
     def check_state_update_frame(self):
         '''
         check some special state and adjust frame list to show
 
         '''
         self.check_if_invincible()
+        self.check_if_hurt_invincible()
         self.check_if_crouching()
 
     def check_if_invincible(self):
@@ -498,6 +582,21 @@ class Mario(pg.sprite.Sprite):
             self.right_frames, self.left_frames = self.invincible_big_frames_list[self.invincible_index]
         else:
             self.right_frames, self.left_frames = self.invincible_small_frames_list[self.invincible_index]
+
+    def check_if_hurt_invincible(self):
+        if self.hurt_invincible:
+            for i in range(16):
+                if 200 * i <= self.current_time - self.hurt_invincible_timer < 200 * (i + 1):
+                    alpha = 255 if i % 2 else 0
+                    self.image.set_alpha(alpha)
+                    if i == 15:
+                        self.hurt_invincible = False
+                        self.set_alpha255()
+
+    def set_alpha255(self):
+        for images in self.all_frames_group:
+            for image in images:
+                image.set_alpha(255)
 
     def check_if_crouching(self):
         '''change rect'''

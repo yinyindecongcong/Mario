@@ -10,7 +10,8 @@ def main():
     '''add states to control'''
     state_dict = {c.MAIN_MENU: menu.Menu(),
                   c.LOAD_SCREEN: load_screen.LoadScreen(),
-                  c.LEVEL1: level1.Level1()
+                  c.LEVEL1: level1.Level1(),
+                  c.GAME_OVER: load_screen.GameOver()
                   }
     Controller.setup_state(state_dict, c.MAIN_MENU)
     Controller.loop()
