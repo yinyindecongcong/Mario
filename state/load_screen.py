@@ -1,5 +1,5 @@
 import pygame as pg
-import config as c, resource, Controller
+import config as c, resource, Controller, game_sound
 from component import info
 class LoadScreen(Controller.State):
     '''temp State when state switch, such as Menu --> Level1, need a temp state showing info, with element info'''
@@ -12,6 +12,7 @@ class LoadScreen(Controller.State):
         self.next_state = self.set_next_state()
         info_state = self.set_info_state()
         self.info = info.Info(self.game_info, info_state)
+        self.sound_manager = game_sound.Sound(self.info)
 
     def set_next_state(self):
         return c.LEVEL1

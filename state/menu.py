@@ -3,7 +3,10 @@ import config as c, resource
 import pygame as pg
 from component import info, mario
 class Menu(State):
-    '''first State when game start, with elements including background, info(title, score, etc), mario'''
+    '''
+    first State when game start, with elements,
+    including background, info(title, score, etc), mario
+    '''
     def __init__(self): #call only once
         super().__init__()
         game_info = {c.SCORE: 0,
@@ -32,6 +35,7 @@ class Menu(State):
         dest = (220, 358)
         self.cursor_image, self.cursor_rect = self.get_image(resource.GFX['title_screen'],
                                                              dest, 0, 150, 13, 13)
+        self.cursor_image.set_colorkey(c.BLACK)
         self.cursor_state = c.PLAYER1
 
     def load_background(self):

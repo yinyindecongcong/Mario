@@ -22,23 +22,8 @@ MARIO_DEAD = 'mario dead'
 
 
 ## Color
-#            R    G    B
-GRAY         = (100, 100, 100)
-NAVYBLUE     = ( 60,  60, 100)
-WHITE        = (255, 255, 255)
-RED          = (255,   0,   0)
-GREEN        = (  0, 255,   0)
-FOREST_GREEN = ( 31, 162,  35)
-BLUE         = (  0,   0, 255)
-SKY_BLUE     = ( 39, 145, 251)
-YELLOW       = (255, 255,   0)
-ORANGE       = (255, 128,   0)
-PURPLE       = (255,   0, 255)
-CYAN         = (  0, 255, 255)
+PURPLE       = (255,   0, 220)
 BLACK        = (  0,   0,   0)
-NEAR_BLACK    = ( 19,  15,  48)
-COMBLUE      = (233, 232, 255)
-GOLD         = (255, 215,   0)
 
 #offset
 SIZE_MULTIPLIER = 2.5
@@ -49,6 +34,12 @@ GROUND_HEIGHT = SCREEN_HEIGHT - 62
 #menu cursor state
 PLAYER1 = '1 player'
 PLAYER2 = '2 player'
+
+#stage for game control
+MAIN_MENU = 'main menu'
+LOAD_SCREEN = 'load screen'
+GAME_OVER = 'game over'
+LEVEL1 = 'level1'
 
 #Mario States
 STAND = 'standing'
@@ -62,6 +53,7 @@ FLAGPOLE = 'flag pole'
 WALKING_TO_CASTLE = 'walking to castle'
 END_OF_LEVEL_FALL = 'end of level fall'
 BOTTOM_OF_POLE = 'bottom of pole'
+DEATH_JUMP = 'death jump'
 
 #LEVEL STATES
 FROZEN = 'frozen'
@@ -91,15 +83,13 @@ BUMPED = 'bumped'
 USELESS = 'run out'
 SPIN = 'spin'
 
-#Brick and coin box contents
-
+#Brick and coin box contents/powerup
 MUSHROOM = 'mushroom'
 STAR = 'star'
 FIREFLOWER = 'fireflower'
 SIXCOINS = '6-coins'
 COIN = 'coin'
 LIFE_MUSHROOM = '1up_mushroom'
-
 FIREBALL = 'fireball'
 
 #FLAG STATE
@@ -111,13 +101,20 @@ UP = 'up'
 SLIDE = 'slide'
 BOUNCE = 'bounce'
 ONEUP = '1UP'
+
 #Fireball state
 FLYING = 'flying'
 BOUNCING = 'bouncing'
 EXPLODING = 'exploding'
 
-DEATH_JUMP = 'death jump'
-
 #enemies
 JUMPED_ON = 'jumped on'
 DEATH_JUMP = 'death jump'
+
+#SOUND STATEZ
+NORMAL = 'normal'
+STAGE_CLEAR = 'stage clear'
+WORLD_CLEAR = 'world clear'
+TIME_WARNING = 'time warning'
+SPED_UP_NORMAL = 'sped up normal'
+INVINCIBLE = 'mario invincible'
