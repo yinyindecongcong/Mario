@@ -45,9 +45,9 @@ class Control():
 
     def flip_state(self):
         prev_state, self.state_name = self.state_name, self.state.next_state
-        persist = self.state.clearup()
+        game_info = self.state.clearup()
         self.state = self.state_dict[self.state_name]
-        self.state.startup(self.current_time, persist)
+        self.state.startup(self.current_time, game_info)
         self.state.prev_state = prev_state
 
     def loop(self):
@@ -61,7 +61,7 @@ class State():
     '''
     base class of different States of the game, like State menu, State load_screen, State level 1;
     all State needs to maintain following info, including:
-        game_info/persist --- info showing;  done/quit --- is state over?
+        game_info --- info showing;  done/quit --- is state over?
         next_state/prev_state --- state switching; current_time --- timing or others
     '''
     def __init__(self):
@@ -69,10 +69,10 @@ class State():
         self.quit = False
         self.next_state = None
         self.prev_state = None
-        self.persist = None
+        self.game_info = None
         self.current_time = 0
 
-    def startup(self, current_time, persist):
+    def startup(self, current_time, game_info):
         '''call to start every state, behave like a constructive function'''
         pass
 
@@ -85,4 +85,4 @@ class State():
     def clearup(self):
         '''call when the state end, return game info'''
         self.done = False
-        return self.persist  #game info maintained in every state
+        return self.game_info  #game info maintained in every state

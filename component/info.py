@@ -35,6 +35,7 @@ class Info():
         self.create_menu_labels()
         self.create_mario_image()
         self.create_load_screen_labels()
+        self.create_game_over_labels()
         self.create_count_clock()
 
 
@@ -129,6 +130,10 @@ class Info():
         self.create_label(level_label, '1-1', 430, 200)
         self.center_labels = [world_label, level_label]
 
+    def create_game_over_labels(self):
+        self.game_over_labels = []
+        self.create_label(self.game_over_labels, 'GAME OVER', 280, 300)
+
     def create_mario_image(self):
         self.lives_label_image = self.image_dict['*']
         self.lives_label_rect = self.lives_label_image.get_rect(center=(378,295))
@@ -169,17 +174,27 @@ class Info():
             self.update_score_images(self.score_image, self.score)
             self.update_score_images(self.menu_labels[3], self.top_score)
             self.flush_coin.update(game_info[c.CURRENT_TIME])
-        if self.state == c.LOAD_SCREEN:
+        elif self.state == c.LOAD_SCREEN or self.state == c.GAME_OVER:
             self.score = game_info[c.SCORE]
             self.update_coin_total(game_info)
             self.update_score_images(self.score_image, self.score)
             self.flush_coin.update(game_info[c.CURRENT_TIME])
-        if self.state == c.LEVEL1:
+        elif self.state == c.LEVEL1:
             self.score = game_info[c.SCORE]
             self.update_coin_total(game_info)
             self.update_score_images(self.score_image, self.score)
             self.flush_coin.update(game_info[c.CURRENT_TIME])
             self.clock_count_update(game_info)
+        elif self.state == c.FAST_COUNT_DOWN:
+            game_info[c.SCORE] += 50
+            self.score = game_info[c.SCORE]
+            self.update_score_images(self.score_image, self.score)
+            self.flush_coin.update(game_info[c.CURRENT_TIME])
+            self.clock_count_update(game_info)
+            if self.time == 0:
+                self.state = c.END_OF_LEVEL
+
+
 
     def update_coin_total(self, game_info):
         self.coin_total = game_info[c.COIN_TOTAL]
@@ -194,17 +209,21 @@ class Info():
         self.create_label(self.coin_count_image, coin_str, 300, 55)
 
     def clock_count_update(self, game_info):
-        if game_info[c.LEVEL_STATE] != c.FROZEN and not self.mario.dead: #TODO: other state to count clock
+        if self.state == c.FAST_COUNT_DOWN:
+            self.time -= 1
+        elif game_info[c.LEVEL_STATE] != c.FROZEN and not self.mario.dead and \
+                not self.mario.state == c.WALKING_TO_CASTLE and \
+                not self.mario.state == c.END_OF_LEVEL_FALL:
             if self.mario.in_castle:
                 self.time -= 1
             elif game_info[c.CURRENT_TIME] - self.current_time > 400:
                 self.time -= 1
                 self.current_time = game_info[c.CURRENT_TIME]
-            self.clock_count_image = []
-            time_str = str(self.time)
-            if len(time_str) < 3:
-                time_str = '0' * (3 - len(time_str)) + time_str
-            self.create_label(self.clock_count_image, time_str, 645, 55)
+        self.clock_count_image = []
+        time_str = str(self.time)
+        if len(time_str) < 3:
+            time_str = '0' * (3 - len(time_str)) + time_str
+        self.create_label(self.clock_count_image, time_str, 645, 55)
 
     def update_score_images(self, images, score):
         index = len(images) - 1
@@ -219,8 +238,11 @@ class Info():
             self.draw_menu_info(screen)
         elif self.state == c.LOAD_SCREEN:
             self.draw_load_screen_info(screen)
-        elif self.state == c.LEVEL1:
+        elif self.state == c.LEVEL1 or self.state == c.FAST_COUNT_DOWN or self.state == c.END_OF_LEVEL:
             self.draw_level1(screen)
+        elif self.state == c.GAME_OVER:
+            self.draw_game_over_info(screen)
+
 
     def draw_menu_info(self, screen):
         for each in self.score_image:
@@ -261,5 +283,17 @@ class Info():
         for each in self.coin_count_image:
             screen.blit(each.image, each.rect)
         for each in self.clock_count_image:
+            screen.blit(each.image, each.rect)
+        screen.blit(self.flush_coin.image, self.flush_coin.rect)
+
+    def draw_game_over_info(self, screen):
+        for each in self.score_image:
+            screen.blit(each.image, each.rect)
+        for label in self.label_list:
+            for each in label:
+                screen.blit(each.image, each.rect)
+        for each in self.coin_count_image:
+            screen.blit(each.image, each.rect)
+        for each in self.game_over_labels:
             screen.blit(each.image, each.rect)
         screen.blit(self.flush_coin.image, self.flush_coin.rect)

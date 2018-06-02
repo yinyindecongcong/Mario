@@ -6,7 +6,7 @@ class Menu(State):
     '''first State when game start, with elements including background, info(title, score, etc), mario'''
     def __init__(self): #call only once
         super().__init__()
-        persist = {c.SCORE: 0,
+        game_info = {c.SCORE: 0,
                    c.TOP_SCORE:0,
                    c.COIN_TOTAL: 0,
                    c.LIVES: 3,
@@ -14,11 +14,11 @@ class Menu(State):
                    c.LEVEL_STATE: None, #
                    c.CAMERA_START_X: 0, #position of Mario
                    c.MARIO_DEAD: False}
-        self.startup(0, persist)
+        self.startup(0, game_info)
 
-    def startup(self, current_time, persist):  #call every time switch into this state
-        self.persist = persist
-        self.game_info = persist
+    def startup(self, current_time, game_info):  #call every time switch into this state
+        self.game_info = game_info
+        self.game_info[c.SCORE] = 0
         self.next_state = c.LOAD_SCREEN
         self.info = info.Info(self.game_info, c.MAIN_MENU)
 
@@ -93,7 +93,7 @@ class Menu(State):
         self.game_info[c.LIVES] = 3
         self.game_info[c.COIN_TOTAL] = 0
         self.game_info[c.LEVEL_STATE] = None
-        self.persist = self.game_info
+        self.game_info[c.CAMERA_START_X] = 0
 
 
 

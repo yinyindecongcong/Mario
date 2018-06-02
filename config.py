@@ -61,6 +61,7 @@ BIG_TO_SMALL = 'big to small'
 FLAGPOLE = 'flag pole'
 WALKING_TO_CASTLE = 'walking to castle'
 END_OF_LEVEL_FALL = 'end of level fall'
+BOTTOM_OF_POLE = 'bottom of pole'
 
 #LEVEL STATES
 FROZEN = 'frozen'
