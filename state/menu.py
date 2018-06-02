@@ -19,6 +19,7 @@ class Menu(State):
     def startup(self, current_time, game_info):  #call every time switch into this state
         self.game_info = game_info
         self.game_info[c.SCORE] = 0
+        self.game_info[c.COIN_TOTAL] = 0
         self.next_state = c.LOAD_SCREEN
         self.info = info.Info(self.game_info, c.MAIN_MENU)
 
