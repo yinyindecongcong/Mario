@@ -60,6 +60,7 @@ class Mario(pg.sprite.Sprite):
         self.y_ac = c.GRAVITY
 
     def setup_images(self):
+        '''load all images and divide them into different groups for convenience'''
         self.right_small_normal_frames = []    #normal color
         self.right_small_green_frames = []     #green\red\black used when transition and invincible
         self.right_small_red_frames = []
@@ -257,7 +258,10 @@ class Mario(pg.sprite.Sprite):
             self.end_fall()
 
     def standing(self, keys, fireball_group):
-        '''check if Mario is still standing, actually fireball_group contains not only fireball'''
+        '''
+        check if Mario is still standing,
+        actually fireball_group contains not only fireball
+        '''
         self.check_to_allow_jump(keys)
         self.check_to_allow_fireball(keys) #check some special state
 
@@ -280,20 +284,26 @@ class Mario(pg.sprite.Sprite):
             if self.allow_jump:
                 self.state = c.JUMP
                 self.y_v = c.JUMP_VEL
+                if self.big:
+                    resource.SFX['big_jump'].play()
+                else:
+                    resource.SFX['small_jump'].play()
         else:
             self.state = c.STAND
 
-
     def shoot(self, fireball_group):
+        '''produce a fireball if permit'''
         list1 = [1 for x in fireball_group if x.name == c.FIREBALL]
         if len(list1) < 2:
             if self.current_time - self.last_fireball_timer > 200:
                 self.last_fireball_timer = self.current_time
                 self.allow_fireball = False
                 fireball_group.add(fireball.FireBall(self.rect.x, self.rect.y, self.facing_right))
+                resource.SFX['fireball'].play()
                 self.frame_index = 6
 
     def get_out_of_crouch(self):
+        '''become stand'''
         bottom, x = self.rect.bottom, self.rect.x
         self.image = self.right_frames[0] if self.facing_right else self.left_frames[0]
         self.rect = self.image.get_rect()
@@ -301,6 +311,7 @@ class Mario(pg.sprite.Sprite):
         self.crouching = False
 
     def walking(self, keys, fireball_group):
+        '''determine mario's behavior when walking based on keys'''
         self.check_to_allow_jump(keys)
         self.check_to_allow_fireball(keys)  # check some special state
         #switch frame
@@ -329,6 +340,10 @@ class Mario(pg.sprite.Sprite):
             if self.allow_jump:
                 self.state = c.JUMP
                 self.y_v = c.JUMP_VEL
+                if self.big:
+                    resource.SFX['big_jump'].play()
+                else:
+                    resource.SFX['small_jump'].play()
         #left or right
         if keys[resource.keybinding['left']] and (not keys[resource.keybinding['right']]):
             self.facing_right = False
@@ -374,6 +389,7 @@ class Mario(pg.sprite.Sprite):
         return c.INTERVEL - abs(self.x_v) * 20
 
     def jumping(self, keys, fireball_group):
+        '''determine mario's behavior when walking based on keys'''
         self.check_to_allow_fireball(keys)
         self.frame_index = 4
         self.allow_jump = False
@@ -398,6 +414,7 @@ class Mario(pg.sprite.Sprite):
                 self.x_v += self.x_ac
 
     def falling(self, keys, fireball_group):
+        '''determine mario's behavior when walking based on keys'''
         self.y_ac = c.GRAVITY
         if self.y_v < self.max_y_v:
             self.y_v += self.y_ac
@@ -490,6 +507,7 @@ class Mario(pg.sprite.Sprite):
         self.rect.bottom, self.rect.x = bottom, x
 
     def start_death_jump(self):
+        '''call when mario die to switch mario's state into DEATH_JUMP'''
         self.state = c.DEATH_JUMP
         self.in_transition_state = True
         self.y_v = -10
@@ -499,21 +517,22 @@ class Mario(pg.sprite.Sprite):
         self.death_timer = self.current_time
 
     def death_jump(self):
-        print('yoyo')
-        #if self.current_time - self.death_timer > 500:
-        self.rect.y += self.y_v
-        self.y_v += 0.5
-        print(self.y_v)
+        if self.current_time - self.death_timer > 200:
+            self.rect.y += self.y_v
+            self.y_v += 0.5
 
     def check_to_allow_jump(self, keys):
+        '''make it not keep jumping when we keep pressing jump'''
         if not keys[resource.keybinding['jump']]:
             self.allow_jump = True
 
     def check_to_allow_fireball(self, keys):
+        '''make it not keep shooting when we keep pressing shoot'''
         if not keys[resource.keybinding['fireball']]:
             self.allow_fireball = True
 
     def slide_down_pole(self):
+        '''image switch when slide down the pole'''
         self.x_v, self.y_v = 0, 5
         if self.rect.bottom < 495:
             if self.flag_pole_timer == 0:
@@ -531,12 +550,14 @@ class Mario(pg.sprite.Sprite):
             self.state = c.BOTTOM_OF_POLE
 
     def sitting_on_bottom(self):
+        '''sit for a while'''
         if self.current_time - self.flag_pole_timer > 210:
             self.image = self.left_frames[9]
             self.x_v, self.y_v = 0, 0
             self.flag_pole_timer = 0
 
     def walking_to_castle(self):
+        '''keep walking until reach castle'''
         self.x_v = 4
         if self.frame_index == 0:
             self.frame_index = 1
@@ -549,19 +570,20 @@ class Mario(pg.sprite.Sprite):
                 self.walking_timer = self.current_time
 
     def end_fall(self):
+        '''falling from the brick under flag pole '''
         self.frame_index = 4
         self.y_v = 6
 
     def check_state_update_frame(self):
         '''
         check some special state and adjust frame list to show
-
         '''
         self.check_if_invincible()
         self.check_if_hurt_invincible()
         self.check_if_crouching()
 
     def check_if_invincible(self):
+        '''image switch when invincible'''
         if self.invincible:
             if self.current_time - self.invincible_start_timer < 12000:
                 self.switch_frames()
@@ -594,6 +616,7 @@ class Mario(pg.sprite.Sprite):
                         self.set_alpha255()
 
     def set_alpha255(self):
+        '''set all images not transparent'''
         for images in self.all_frames_group:
             for image in images:
                 image.set_alpha(255)
@@ -608,6 +631,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def animation(self):
+        '''choose image by index'''
         if self.in_transition_state:
             pass
         elif self.facing_right:
