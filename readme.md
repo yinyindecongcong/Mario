@@ -1,9 +1,3 @@
----
-
-typora-root-url: C:\Users\Administrator\Desktop\all\typora\image_md\mario
-typora-copy-images-to: C:\Users\Administrator\Desktop\all\typora\image_md\mario
----
-
 ## A LAN Game: Super Mario 
 
 * This is a python project of Super Mario, learning from [justinmeister/Mario-Level-1](https://github.com/justinmeister/Mario-Level-1).
@@ -25,14 +19,14 @@ typora-copy-images-to: C:\Users\Administrator\Desktop\all\typora\image_md\mario
 
 * 运行情况如下：
 
-#####单人模式
+**单人模式**
 
 <img src="http://chuantu.biz/t6/329/1529136015x1822611287.png">
 <img src="http://chuantu.biz/t6/329/1529137170x-1404775503.gif">
 
   
 
-#####双人模式
+**双人模式**
 
 <img src="http://chuantu.biz/t6/329/1529137664x-1404775503.gif">
 
