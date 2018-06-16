@@ -16,7 +16,9 @@ class Menu(State):
                    c.CURRENT_TIME: 0.0,
                    c.LEVEL_STATE: None, #
                    c.CAMERA_START_X: 0, #position of Mario
-                   c.MARIO_DEAD: False}
+                   c.MARIO_DEAD: False,
+                   c.TWO_players: False
+                     }
         self.startup(0, game_info)
 
     def startup(self, current_time, game_info):  #call every time switch into this state
@@ -53,10 +55,10 @@ class Menu(State):
         self.mario.rect.x = 110
         self.mario.rect.bottom = c.GROUND_HEIGHT
 
-    def update(self, screen, keys, current_time):
+    def update(self, screen, keys1, keys2, current_time):
         self.current_time = current_time
         self.game_info[c.CURRENT_TIME] = current_time
-        self.update_cursor(keys)
+        self.update_cursor(keys1)
         self.info.update(self.game_info)
         screen.blit(self.bg_image, self.bg_rect)
         screen.blit(self.cursor_image, self.cursor_rect)
@@ -65,7 +67,7 @@ class Menu(State):
         self.info.draw(screen)
 
     def update_cursor(self, keys):
-        proceed = [pg.K_a, pg.K_s, pg.K_RETURN] #a or s or enter to proceed
+        proceed = [pg.K_s, pg.K_RETURN] #a or s or enter to proceed
         if self.cursor_state == c.PLAYER1:
             self.cursor_rect.y = 347
             if keys[pg.K_DOWN]:
@@ -79,6 +81,12 @@ class Menu(State):
             if keys[pg.K_UP]:
                 self.cursor_rect.y = 347
                 self.cursor_state = c.PLAYER1
+            for each in proceed:
+                if keys[each]:
+                    self.done = True
+                    self.reset_game_info()
+                    self.game_info[c.TWO_players] = True
+
 
 
     def get_image(self, source, dest, x, y, width, height):

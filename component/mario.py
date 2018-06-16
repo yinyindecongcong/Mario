@@ -2,8 +2,9 @@ import pygame as pg
 import config as c, resource
 from component import fireball
 class Mario(pg.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, name='1'):
         super().__init__()
+        self.name = name
         self.image_sheet = resource.GFX['mario_bros']
         self.setup_timers()
         self.setup_states()
@@ -13,7 +14,7 @@ class Mario(pg.sprite.Sprite):
         self.state = c.STAND
         self.image = self.right_frames[self.frame_index]
         self.rect = self.image.get_rect()
-
+        #添加了名字用来初始化mario，调整mario颜色
         self.current_time = 0
 
     def setup_timers(self):
@@ -82,16 +83,7 @@ class Mario(pg.sprite.Sprite):
         self.right_fire_frames = []  # normal color
         self.left_fire_frames = []
 
-        self.right_frames_group = [self.right_small_normal_frames, self.right_small_green_frames,
-                                   self.right_small_red_frames, self.right_small_black_frames,
-                                   self.right_big_normal_frames, self.right_big_green_frames,
-                                   self.right_big_red_frames, self.right_big_black_frames,
-                                   self.right_fire_frames]
-        self.left_frames_group = [self.left_small_normal_frames, self.left_small_green_frames,
-                                  self.left_small_red_frames, self.left_small_black_frames,
-                                  self.left_big_normal_frames, self.left_big_green_frames,
-                                  self.left_big_red_frames, self.left_big_black_frames,
-                                  self.left_fire_frames]
+
         #right_small_normal_frames
         self.right_small_normal_frames.append(self.get_image(178, 32, 12, 16))  # right standing [0]
         self.right_small_normal_frames.append(self.get_image(80, 32, 15, 16))   # Right walking 1 [1]
@@ -106,12 +98,18 @@ class Mario(pg.sprite.Sprite):
         self.right_small_normal_frames.append(self.get_image(210, 33, 12, 16))  # Frame 2 of flag pole slide [10]
 
         #right_small_green_frames for invincible animation
-        self.right_small_green_frames.append(self.get_image(178, 224, 12, 16))  # right standing [0]
-        self.right_small_green_frames.append(self.get_image(80, 224, 15, 16))  # Right walking 1 [1]
-        self.right_small_green_frames.append(self.get_image(96, 224, 16, 16))  # Right walking 2 [2]
-        self.right_small_green_frames.append(self.get_image(112, 224, 16, 16))  # Right walking 3 [3]
-        self.right_small_green_frames.append(self.get_image(144, 224, 16, 16))  # Right jump [4]
-        self.right_small_green_frames.append(self.get_image(130, 224, 14, 16))  # Right skid [5]
+        self.right_small_green_frames.append(self.get_image(178, 128, 12, 16))  # right standing [0]
+        self.right_small_green_frames.append(self.get_image(80, 128, 15, 16))  # Right walking 1 [1]
+        self.right_small_green_frames.append(self.get_image(96, 128, 16, 16))  # Right walking 2 [2]
+        self.right_small_green_frames.append(self.get_image(112, 128, 16, 16))  # Right walking 3 [3]
+        self.right_small_green_frames.append(self.get_image(144, 128, 16, 16))  # Right jump [4]
+        self.right_small_green_frames.append(self.get_image(130, 128, 14, 16))  # Right skid [5]
+        self.right_small_green_frames.append(self.get_image(160, 128, 15, 16))  # Death frame [6]
+        #TODO 绿的变大图片可能有问题
+        self.right_small_green_frames.append(self.get_image(320, 104, 16, 24))   # Transition small to big [7]
+        self.right_small_green_frames.append(self.get_image(241, 128, 16, 16))  # Transition big to small [8]
+        self.right_small_green_frames.append(self.get_image(194, 128, 12, 16))  # Frame 1 of flag pole Slide [9]
+        self.right_small_green_frames.append(self.get_image(210, 128, 12, 16))  # Frame 2 of flag pole slide [10]
 
         # right_small_red_frames for invincible animation
         self.right_small_red_frames.append(self.get_image(178, 272, 12, 16))  # right standing [0]
@@ -143,14 +141,17 @@ class Mario(pg.sprite.Sprite):
         self.right_big_normal_frames.append(self.get_image(209, 2, 16, 29))  # Frame 2 of flag pole slide [10]
 
         # right_big_green_frames for invincible animation
-        self.right_big_green_frames.append(self.get_image(176, 192, 16, 32))  # right standing [0]
-        self.right_big_green_frames.append(self.get_image(81, 192, 16, 32))  # Right walking 1 [1]
-        self.right_big_green_frames.append(self.get_image(97, 192, 15, 32))  # Right walking 2 [2]
-        self.right_big_green_frames.append(self.get_image(113, 192, 15, 32))  # Right walking 3 [3]
-        self.right_big_green_frames.append(self.get_image(144, 192, 16, 32))  # Right jump [4]
-        self.right_big_green_frames.append(self.get_image(128, 192, 16, 32))  # Right skid [5]
-        self.right_big_green_frames.append(self.get_image(336, 192, 16, 32))  # Right throwing [6]
-        self.right_big_green_frames.append(self.get_image(160, 202, 16, 22))  # Right crouching [7]
+        self.right_big_green_frames.append(self.get_image(176, 96, 16, 32))  # right standing [0]
+        self.right_big_green_frames.append(self.get_image(81, 96, 16, 32))  # Right walking 1 [1]
+        self.right_big_green_frames.append(self.get_image(97, 96, 15, 32))  # Right walking 2 [2]
+        self.right_big_green_frames.append(self.get_image(113, 96, 15, 32))  # Right walking 3 [3]
+        self.right_big_green_frames.append(self.get_image(144, 96, 16, 32))  # Right jump [4]
+        self.right_big_green_frames.append(self.get_image(128, 96, 16, 32))  # Right skid [5]
+        self.right_big_green_frames.append(self.get_image(336, 96, 16, 32))  # Right throwing [6]
+        self.right_big_green_frames.append(self.get_image(160, 106, 16, 22))  # Right crouching [7]
+        self.right_big_green_frames.append(self.get_image(272, 98, 16, 29))  # Transition big to small [8]
+        self.right_big_green_frames.append(self.get_image(193, 98, 16, 30))  # Frame 1 of flag pole slide [9]
+        self.right_big_green_frames.append(self.get_image(209, 98, 16, 29))  # Frame 2 of flag pole slide [10]
 
         # right_big_red_frames for invincible animation
         self.right_big_red_frames.append(self.get_image(176, 240, 16, 32))  # right standing [0]
@@ -184,6 +185,24 @@ class Mario(pg.sprite.Sprite):
         self.right_fire_frames.append(self.get_image(0, 0, 0, 0))       # Place holder [8]
         self.right_fire_frames.append(self.get_image(193, 50, 16, 29))  # Frame 1 of flag pole slide [9]
         self.right_fire_frames.append(self.get_image(209, 50, 16, 29))  # Frame 2 of flag pole slide [10]
+
+        #判断是否是路易，交换两个列表
+        if self.name == '2':
+            self.right_small_normal_frames, self.right_small_green_frames = \
+                self.right_small_green_frames, self.right_small_normal_frames
+            self.right_big_normal_frames, self.right_big_green_frames = \
+                self.right_big_green_frames, self.right_big_normal_frames
+
+        self.right_frames_group = [self.right_small_normal_frames, self.right_small_green_frames,
+                                   self.right_small_red_frames, self.right_small_black_frames,
+                                   self.right_big_normal_frames, self.right_big_green_frames,
+                                   self.right_big_red_frames, self.right_big_black_frames,
+                                   self.right_fire_frames]
+        self.left_frames_group = [self.left_small_normal_frames, self.left_small_green_frames,
+                                  self.left_small_red_frames, self.left_small_black_frames,
+                                  self.left_big_normal_frames, self.left_big_green_frames,
+                                  self.left_big_red_frames, self.left_big_black_frames,
+                                  self.left_fire_frames]
 
         #setup left frames using pygame.transform.flip()
         for i in range(len(self.right_frames_group)):
@@ -254,8 +273,9 @@ class Mario(pg.sprite.Sprite):
             self.sitting_on_bottom()
         elif self.state == c.WALKING_TO_CASTLE:
             self.walking_to_castle()
-        elif self.state ==c.END_OF_LEVEL_FALL:
+        elif self.state == c.END_OF_LEVEL_FALL:
             self.end_fall()
+
 
     def standing(self, keys, fireball_group):
         '''
@@ -588,13 +608,14 @@ class Mario(pg.sprite.Sprite):
             if self.current_time - self.invincible_start_timer < 12000:
                 self.switch_frames()
             else:
-                if self.fire:
-                    self.right_frames, self.left_frames = self.fire_frames
-                elif self.big:
-                    self.right_frames, self.left_frames = self.normal_big_frames
-                else:
-                    self.right_frames, self.left_frames = self.normal_small_frames
                 self.invincible = False
+        else:
+            if self.fire:
+                self.right_frames, self.left_frames = self.fire_frames
+            elif self.big:
+                self.right_frames, self.left_frames = self.normal_big_frames
+            else:
+                self.right_frames, self.left_frames = self.normal_small_frames
 
     def switch_frames(self):
         if self.current_time - self.invincible_animation_timer > 100:

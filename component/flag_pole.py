@@ -36,7 +36,7 @@ class Flag(pg.sprite.Sprite):
 
     def update(self):
         if self.state == c.MOVE:
-            self.rect.y += 5
+            self.rect.y += 4
             if self.rect.bottom >= 485:
                 self.state = c.BOTTOM_OF_POLE
 

@@ -2,6 +2,11 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 CAPTION = "Super Mario Level 1"
 
+TWO_players = "two pp"
+
+server_address = ('localhost', 8022)
+player1_address = [('localhost', 3333), ('localhost', 4444)]
+player2_address = [('localhost', 1111), ('localhost', 2222)]
 #overhead state info
 MAIN_MENU = 'main menu'
 LOAD_SCREEN = 'loading screen'
@@ -62,12 +67,12 @@ IN_CASTLE = 'in castle'
 FLAG_AND_FIREWORKS = 'flag and fireworks'
 
 #MARIO FORCES
-WALK_ACCEL = 0.15
+WALK_ACCEL = 0.1
 RUN_ACCEL = 20
-TURNAROUND = 0.35
+TURNAROUND = 0.4
 
-GRAVITY = 1.01
-JUMP_AC = 0.28
+GRAVITY = 1.0
+JUMP_AC = 0.25
 JUMP_VEL = -10
 MAX_Y_VEL = 11
 

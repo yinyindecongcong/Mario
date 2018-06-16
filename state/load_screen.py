@@ -20,7 +20,7 @@ class LoadScreen(Controller.State):
     def set_info_state(self):
         return c.LOAD_SCREEN
 
-    def update(self, screen, keys, current_time):
+    def update(self, screen, keys1, keys2, current_time):
         self.game_info[c.CURRENT_TIME] = current_time
         if current_time - self.start_time < 2500:
             screen.fill(c.BLACK)

@@ -211,12 +211,13 @@ class Info():
     def clock_count_update(self, game_info):
         if self.state == c.FAST_COUNT_DOWN:
             self.time -= 1
-        elif game_info[c.LEVEL_STATE] != c.FROZEN and not self.mario.dead and \
-                not self.mario.state == c.WALKING_TO_CASTLE and \
-                not self.mario.state == c.END_OF_LEVEL_FALL:
-            if self.mario.in_castle:
-                self.time -= 1
-            elif game_info[c.CURRENT_TIME] - self.current_time > 400:
+        elif game_info[c.LEVEL_STATE] != c.FROZEN:
+            '''
+            elif game_info[c.LEVEL_STATE] != c.FROZEN and not self.mario.dead and \
+                    not self.mario.state == c.WALKING_TO_CASTLE and \
+                    not self.mario.state == c.END_OF_LEVEL_FALL:
+            '''
+            if game_info[c.CURRENT_TIME] - self.current_time > 400:
                 self.time -= 1
                 self.current_time = game_info[c.CURRENT_TIME]
         self.clock_count_image = []
